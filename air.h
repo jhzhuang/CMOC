@@ -1,7 +1,8 @@
 #ifndef _AIR_H_
 #define _AIR_H_
 
-typedef double Real;
+#include "common.h"
+#include <math.h>
 
 #define FIXED_CP 0
 #define POLYNOMIAL_CP 1
@@ -20,7 +21,7 @@ namespace CMOC {
 	} Air;
 
 	/*  gas constant  */
-	Real R_Air = (Real)287.06;
+	extern Real R_Air;
 
 	/*  initial an air object by pressure and density  */
 	void Init_Air_P_Rho(Air *air, Real p, Real rho);
@@ -37,18 +38,31 @@ namespace CMOC {
 	/*  get sound speed  */
 	Real Get_Sound_Speed(const Air &air);
 
+#if CP_MODEL == FIXED_CP
+
+	/*  set specific heat ratio  */
+	void Set_Gamma(Real gamma);
+
+#elif CP_MODEL == POLYNOMIAL_CP
+
+
+
+#else
+
+#define UNDEFINED_CP_MODEL
+
+#endif
+
 	inline void Init_Air_P_Rho(Air *air, Real p, Real rho) {
 		air->pressure = p;
 		air->density = rho;
 		air->temperature = p / (rho * R_Air);
 	}
 
-	
-
-#if CP_MODEL == FIXED_CP
+	#if CP_MODEL == FIXED_CP
 
 	/*  specific heat ratio  */
-	Real Gamma = (Real)1.4;
+	extern Real Gamma;
 
 	inline void Set_Gamma(Real gamma) {
 		Gamma = gamma;
@@ -64,6 +78,10 @@ namespace CMOC {
 
 	inline Real Get_Gamma(const Air &air) {
 		return Gamma;
+	}
+
+	inline Real Get_Sound_Speed(const Air &air) {
+		return sqrt(Gamma * air.pressure / air.density);
 	}
 
 #elif CP_MODEL == POLYNOMIAL_CP
